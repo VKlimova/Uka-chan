@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item
+        android:id="@+id/action_like"
+        android:checkable="true"
+        android:icon="@drawable/ic_favorite_border_black_24dp"
+        android:orderInCategory="100"
+        android:title="@string/action_like"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_share"
+        android:icon="@drawable/ic_menu_share"
+        android:orderInCategory="100"
+        android:title="@string/action_share"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_widget"
+        android:icon="@android:drawable/sym_def_app_icon"
+        android:orderInCategory="100"
+        android:title="@string/action_widget"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_edit"
+        android:icon="@android:drawable/ic_menu_edit"
+        android:orderInCategory="100"
+        android:title="@string/action_edit"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_2firebase"
+        android:icon="@drawable/ic_menu_send"
+        android:orderInCategory="100"
+        android:title="@string/action_2firebase"
+        app:showAsAction="never" />
+</menu>

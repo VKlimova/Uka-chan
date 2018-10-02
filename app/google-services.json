@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "521396116894",
+    "firebase_url": "https://uka-chan.firebaseio.com",
+    "project_id": "uka-chan",
+    "storage_bucket": "uka-chan.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:521396116894:android:0d827d72094bc5cc",
+        "android_client_info": {
+          "package_name": "com.amargodigits.uka_chan"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "521396116894-ncl48ctsl5mkvrfi4n3kof2pauo2guq8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.amargodigits.uka_chan",
+            "certificate_hash": "e106355b26d1aec8e3269cff44cc9dfc45c0c18e"
+          }
+        },
+        {
+          "client_id": "521396116894-7ui7u2tj69i91sgug0hjinl654345l7b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDk9EWieuWT-EBoXySMNId9EiGhuM-UQQ4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "521396116894-7ui7u2tj69i91sgug0hjinl654345l7b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

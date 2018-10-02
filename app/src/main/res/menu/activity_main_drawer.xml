@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_camera"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="Import Rien" />
+        <item
+            android:id="@+id/nav_gallery"
+            android:icon="@drawable/ic_menu_gallery"
+            android:title="Import Mariachi" />
+        <item
+            android:id="@+id/nav_slideshow"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Import Despacito" />
+
+        <item
+            android:id="@+id/nav_waikiki"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Import waikiki" />
+    </group>
+
+    <item android:title="SQLite">
+        <menu>
+            <item
+                android:id="@+id/nav_manage"
+                android:icon="@drawable/ic_menu_manage"
+                android:title="SQLite -> TextView" />
+            <item
+                android:id="@+id/nav_sqlite_get"
+                android:icon="@drawable/ic_menu_share"
+                android:title="SQLite get from Firebase" />
+            <item
+                android:id="@+id/nav_sqlite_clear"
+                android:icon="@drawable/ic_menu_send"
+                android:title="SQLite clear" />
+        </menu>
+    </item>
+
+</menu>
