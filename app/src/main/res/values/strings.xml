@@ -1,26 +1,44 @@
 <resources>
-    <string name="app_name">Uka-chan</string>
+    <string name="app_name">Ukulele</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_title">You can gift me flowers by watching add video</string>
+    <string name="nav_header_fest">Mmmmm&#8230; Delicious!</string>
+    <string name="nav_header_subtitle"> </string>
+    <string name="youtube_link">https://www.youtube.com/user/vvklimova/videos</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
     <string name="action_edit">Edit</string>
     <string name="action_like">Like</string>
     <string name="action_widget">Show in Widget</string>
     <string name="action_share">Share</string>
-    <string name="action_2firebase">To Firebase</string>
+    <string name="save">Save</string>
 
+    <string name="chordon">Show Chords</string>
+    <string name="chordoff">Hide Chords</string>
+    <string name="chordsIV">Chords</string>
 
+    <string name="florist">Flower for watching video</string>
+    <string name="sort_title">Sort by song title</string>
+    <string name="sort_artist">Sort by artist</string>
+    <string name="sort_date">Sort by date</string>
+    <string name="sort_like">Sort by liked</string>
+    <string name="action_add">Add song</string>
+    <string name="action_download">Check updates</string>
+<string name="thanks">Thank you!</string>
+    <string name="ok">OK</string>
+    <string name="tag_hint">Tag</string>
+    <string name="title_hint">Title</string>
+    <string name="singer_hint">Singer/Author</string>
+    <string name="link_hint">Link to video</string>
+    <string name="text_hint">Text</string>
+    <string name="search">Search</string>
+    <string name="search_hint">Search songs and artists</string>
     <string name="error_message">Error:</string>
-    <string name="no_data">No data</string>
-    <string name="select_step">Select step to display</string>
-    <string name="thumb">Thumbnail</string>
-    <string name="appwidget_text">Baking app</string>
-    <string name="select_recipe">Select recipe to view the ingredients in this widget</string>
-    <string name="add_widget">Add widget</string>
-    <string name="descr_empty">Description is empty</string>
-    <string name="no_video">No video for this step</string>
+    <string name="appwidget_text">Uka app</string>
+    <string name="select_song">Select song to view in this widget</string>
+    <string name="nav_help">Help</string>
+    <string name="help_txt">Welcome to Ukulele simple app!\nNew songs will be updated automagically as appear on server.\nPlease support the project by viewing rewarded add videos, this will cheer up the fox!
+    </string>
 
 </resources>

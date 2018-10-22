@@ -2,54 +2,77 @@
     <string name="A">2100</string>
     <string name="Am">2000</string>
     <string name="A7">0100</string>
+    <string name="Am7">0000</string>
     <string name="A_">3211</string>
     <string name="A_m">3111</string>
     <string name="A_7">1211</string>
+    <string name="Ab">5343</string>
+    <string name="Abm">4342</string>
+    <string name="Asus4">2200</string>
 
     <string name="B">4322</string>
     <string name="Bm">4222</string>
     <string name="Bm7">2222</string>
     <string name="B7">2322</string>
     <string name="Bb">3211</string>
+    <string name="Bbm">3111</string>
+    <string name="Bsus4">4422</string>
+    <string name="Bbsus4">3311</string>
 
     <string name="C">0003</string>
     <string name="Cm">0333</string>
+    <string name="Cm7">3333</string>
     <string name="C6">0453</string>
     <string name="C7">0001</string>
+    <string name="Csus4">0013</string>
     <string name="C_">1114</string>
     <string name="C_m">1444</string>
     <string name="C_7">1112</string>
+    <string name="C_sus4">1124</string>
 
     <string name="D">2220</string>
     <string name="Dm">2210</string>
+    <string name="Dm7">2213</string>
     <string name="D7">2223</string>
+    <string name="Dsus4">0230</string>
     <string name="D_">0331</string>
     <string name="D_m">3321</string>
     <string name="D_7">3334</string>
+    <string name="Dbm">1444</string>
 
-
-    <string name="E">1402</string>
+    <string name="E">4402</string>
+    <!--<string name="E">1402</string>-->
     <string name="Em">0432</string>
     <string name="E7">1202</string>
+    <string name="Em7">0202</string>
+    <string name="Ebm">3321</string>
+    <string name="Esus4">2452</string>
 
     <string name="F">2010</string>
     <string name="Fm">1013</string>
+    <string name="Fm7">1313</string>
     <string name="F7">2313</string>
-    <string name="F_">2120</string>
-    <string name="F_m">1013</string>
+    <string name="F6">2213</string>
+    <string name="Fsus4">3011</string>
+    <string name="F_">3121</string>
+    <string name="F_m">212</string>
     <string name="F_7">3424</string>
 
     <string name="G">0232</string>
     <string name="Gm">0231</string>
     <string name="G7">0212</string>
-    <string name="G_">4232</string>
+    <string name="Gm7">0211</string>
+    <string name="Gsus4">0233</string>
+    <string name="G_">5343</string>
     <string name="G_m">4342</string>
     <string name="G_7">1323</string>
+    <string name="Gbm">2120</string>
 
     <string name="H">4322</string>
     <string name="Hm">4222</string>
     <string name="Hm7">2222</string>
     <string name="H7">2322</string>
     <string name="Hb">3211</string>
-
+    <string name="Hbm">3111</string>
+    <string name="Hsus4">4422</string>
 </resources>

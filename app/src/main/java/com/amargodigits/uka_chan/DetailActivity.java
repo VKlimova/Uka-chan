@@ -1,33 +1,46 @@
 package com.amargodigits.uka_chan;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
+import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Typeface;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.TextPaint;
-import android.text.style.ClickableSpan;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RemoteViews;
+import android.widget.ScrollView;
 import android.widget.TextView;
-
+import com.amargodigits.uka_chan.model.Song;
+import com.amargodigits.uka_chan.utils.MusicUtils;
+import com.amargodigits.uka_chan.utils.UkaWidgetProvider;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.picasso.Picasso;
-
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+
+import static com.amargodigits.uka_chan.MainActivity.LOG_TAG;
+import static com.amargodigits.uka_chan.MainActivity.mAdapter;
+import static com.amargodigits.uka_chan.MainActivity.mSongList;
+import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_LIKE;
+import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_LINK;
+import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_SINGER;
+import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_SONG_ID;
+import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_TEXT;
+import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_TITLE;
+import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_VIEW_TIMESTAMP;
 
 
 /*
@@ -35,42 +48,83 @@ Detail Activity shows the song text and details
  */
 
 public class DetailActivity extends AppCompatActivity {
-
+    Drawable starDrawable; // like-unlike song
+    Drawable gridDrawable; // show-hide chords
+    public static final String PREFS_NAME = "UkaPrefs";
     public static TextView textTV, titleTV, singerTV, linkTV;
-    public Context mContext;
-    Toolbar mToolbar;
-    public static String LOG_TAG = "uka_chan_tag";
+    public static ImageView imgIV;
+    public static Context mContext;
+    public static ScrollView mScrollView;
+    static ImageView chordsIV;
+    static String songId, songTitle, songText, songSinger, songLink, songImg, songTextBasic, songLike, songUpdate, songView;
+    public static boolean fromWidget = false;
+    ArrayList<String> useChords;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        mScrollView = findViewById(R.id.detail_scroll);
         mContext = getApplicationContext();
-        Log.i(LOG_TAG, "Detail onCreate");
         textTV = (TextView) findViewById(R.id.songtext_view);
         titleTV = (TextView) findViewById(R.id.songtitle_view);
         singerTV = (TextView) findViewById(R.id.singer_view);
         linkTV = (TextView) findViewById(R.id.link_view);
-
+        imgIV = (ImageView) findViewById(R.id.img);
+        chordsIV = (ImageView) findViewById(R.id.chordsIV); // Image view to hold chords image
         Intent intent = getIntent();
-        String songId = intent.getStringExtra("songId");
-        String songTitle = intent.getStringExtra("songTitle");
-        String songText = intent.getStringExtra("songText");
-        String songSinger = intent.getStringExtra("songSinger");
-        String songImg = intent.getStringExtra("songImg");
-        final String songLink = intent.getStringExtra("songLink");
+        songId = intent.getStringExtra("songId");
+        detailRedraw(songId);
+        // Obtain the FirebaseAnalytics instance.
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        setIntent(intent);
+        songId = intent.getStringExtra("songId");
+        try {
+            detailRedraw(songId);
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "DetailActivity onCreate ", e);
+        }
+    }
+
+    public void detailRedraw(String songID) {
+        int songNum = getSongPos(songId);
+        Song song = mSongList.get(songNum);
+        try {
+            songTitle = song.getTitle();
+            songText = song.getText();
+            songSinger = song.getSinger();
+            songImg = song.getImg();
+            songLink = song.getLink();
+            songLike = song.getLiked();
+            songUpdate = song.getUpdate_timestamp();
+            songView = song.getView_timestamp();
+            songTextBasic = songText;
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Detail Activity ", e);
+        }
         titleTV.setText(songTitle);
-
-        if (songSinger == null) {
+        if ((songSinger == null) || (songSinger.length() < 1)) {
             singerTV.setVisibility(View.GONE);
+            singerTV.setText("");
         } else {
+            singerTV.setVisibility(View.VISIBLE);
             singerTV.setText(songSinger);
         }
-
-        if (songLink == null) {
+        if ((songLink == null) || (songLink.length() < 1)) {
             linkTV.setVisibility(View.GONE);
+            linkTV.setText("");
         } else {
+            linkTV.setVisibility(View.VISIBLE);
             linkTV.setText(songLink);
             linkTV.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -81,176 +135,259 @@ public class DetailActivity extends AppCompatActivity {
                     try {
                         mContext.startActivity(intent);
                     } catch (Exception e) {
-                        //todo
-                        Log.i(LOG_TAG, "Exception opening " + Uri.parse("songLink").toString() + " : " + e.toString());
+                        Log.e(LOG_TAG, "Exception opening " + Uri.parse("songLink").toString(), e);
                     }
                 }
             });
         }
 
+       useChords=MusicUtils.useChords(songText);
 
-        songText = songText.replace("\t", "    ");
-        songText = songText.replace("\n", " \n");
-        songText = songText.replace("\r", " \r");
-        songText = songText.replace("\0", " \0");
-        String newstring = "";
+        textTV.setText(MusicUtils.chordsText(songText));
 
-        String[] chords = new String[]{"A", "B", "C", "D", "E", "F", "G", "H"};
-        String[] chordPrefs = new String[]{"#m", "m#", "b", "m", "#", "7", "6", "b", ""};
-        ArrayList<String> useChords = new ArrayList<String>(); //Chord used in a song list
-        Spannable text = new SpannableString(songText);
-        int curInd, chordLength;
-        for (String chord : chords) {
-            for (String chordPref : chordPrefs) {
-                chordLength = chord.length() + chordPref.length();
-                curInd = songText.indexOf(chord + chordPref + " ");
-                if (curInd > -1) useChords.add(chord + chordPref);
-                while (curInd > -1) {
-                    try {
-//                    Log.i(TAG, "found " + chord+chordPref + " at " + curInd);
-                        text.setSpan(new ClickableSpan() {
-                            @Override
-                            public void onClick(View widget) {
-                                // TODO Open link
-//                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(revUrl));
-//                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                            try {
-//                                mContext.startActivity(intent);
-//                            } catch (Exception e) {
-//                                Log.i(TAG, "Exception opening " + Uri.parse("http://ya.ru").toString() + " : " + e.toString());
-//                            }
-                            }
-
-                            @Override
-                            public void updateDrawState(TextPaint textPaint) {
-                                textPaint.setColor(textPaint.linkColor);
-                                textPaint.setUnderlineText(false);    // this remove the underline
-                            }
-                        }, curInd, curInd + chordLength, 0);
-
-                        newstring = songText.substring(0, curInd);
-                        newstring = newstring.concat(chord + chordPref + ".");
-                        newstring = newstring + (songText.substring(curInd + chordLength + 1, songText.length()));
-                        curInd = newstring.indexOf(chord + chordPref + " ", curInd + chordLength);
-                        songText = newstring;
-                    } catch (Exception e) {
-                        Log.i(LOG_TAG, "Exception " + e.toString());
-                    }
-                }
-            }
-        }
-
-        textTV.setText(text);
-// IMG
-        ImageView img = (ImageView) findViewById(R.id.img);
-        if (songImg == null) {
-            img.setVisibility(View.GONE);
-        } else {
-            Picasso.with(this).load(songImg)
-                    .placeholder(R.drawable.progress_animation)
-                    .error(R.drawable.ic_cloud_off_black_24dp)
-                    .into(img);
-        }
-
-
-
-
-
-        Log.i(LOG_TAG, "-----Starting with images-----");
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
-        int width = displayMetrics.widthPixels;
-        Log.i(LOG_TAG, "width=" + width);
-        ImageView chordsIV = (ImageView) findViewById(R.id.chordsIV); // Image view to hold chords image
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = false;
-        options.inMutable = true;
-        Bitmap oneChordBmp = BitmapFactory.decodeResource(getResources(), R.drawable.blank_chord, options);
-        int tmpWidth = oneChordBmp.getWidth();
-        int tmpHeight = oneChordBmp.getHeight();
-        int chordNum = useChords.size(); // Number of chords to be displayed
-        if (chordNum<3) chordNum++;
-        int chordWidth = width / (chordNum); // Width of one chord image
-        float koef = (float) chordWidth / tmpWidth;
-        Log.i(LOG_TAG, "koef=" + String.valueOf(koef));
-        int chordHeight = (int) Math.floor(tmpHeight * koef); //height of one chord image
-
-        Log.i(LOG_TAG, "chordWidth=" + chordWidth + " chordHeight=" + chordHeight);
-
-        Matrix scaleOnechordMatrix = new Matrix();
-        scaleOnechordMatrix.setScale(koef, koef);
         try {
-            Bitmap mutableOneChordBmp = Bitmap.createBitmap(oneChordBmp, 0, 0, tmpWidth, tmpHeight, scaleOnechordMatrix, true);
-            Bitmap mutableAllChordsBmp = Bitmap.createBitmap(chordWidth * chordNum, chordHeight, Bitmap.Config.ARGB_8888);
-            Canvas chordCanvas = new Canvas(mutableAllChordsBmp);
-            Matrix moveMatrix = new Matrix();
-            Paint paint = new Paint();
-            paint.setColor(Color.DKGRAY);
-            paint.setTypeface(Typeface.DEFAULT_BOLD);
-            paint.setTextSize(chordWidth / 3);
-            Paint fPaint = new Paint();
-            fPaint.setColor(Color.RED);
-            fPaint.setTypeface(Typeface.DEFAULT_BOLD);
-            fPaint.setTextSize(chordWidth/2);
-            for (int j = 0; j < useChords.size(); j++) { // j is a chord number
-                moveMatrix.setTranslate(j * chordWidth, 0);
-                chordCanvas.drawBitmap(mutableOneChordBmp, moveMatrix, null);
-                chordCanvas.drawText(useChords.get(j).toString(), j * chordWidth + (int) chordWidth / 15, chordWidth / 3, paint);
-                String curChord = getChord(useChords.get(j));
-                if (curChord.length()>0) {  //if chord found in table, draw the chord
-                    Log.i(LOG_TAG, useChords.get(j) + " " + curChord);
-                    int fretNum;
-                    for (int i = 0; i <= 3; i++) { // i is a wire number
-                        fretNum = Integer.valueOf(curChord.substring(i,i+1));
-                        Log.i(LOG_TAG, fretNum + " ");
-                        if (fretNum > 0)
-                            chordCanvas.drawCircle(j * chordWidth + (fretNum) * chordWidth * 88 / 500 + chordWidth / 50, chordHeight * 65 / 200 + (4-i) * chordHeight * 107 / 700, chordWidth / 14, fPaint);
-                    }
-                }
-                else {
-                    Log.i(LOG_TAG, "Chord not found");
-                    chordCanvas.drawText("?",j * chordWidth + (1) * chordWidth * 88 / 500 + chordWidth / 50, chordHeight * 65 / 200 + (3) * chordHeight * 107 / 700, fPaint);
-                }
+            if ((songImg == null) || (songImg.length() < 1)) {
+                imgIV.setVisibility(View.GONE);
+            } else {
+                imgIV.setVisibility(View.VISIBLE);
+                Picasso.with(mContext).load(songImg)
+                        .placeholder(R.drawable.progress_animation)
+                        .error(R.drawable.ic_cloud_off_black_24dp)
+                        .into(imgIV);
             }
-            chordsIV.setImageBitmap(mutableAllChordsBmp);
         } catch (Exception e) {
-            Log.i(LOG_TAG, "Exception " + e.toString());
+            Log.e(LOG_TAG, "DetailActivity " , e);
         }
+
+
+
+        if (useChords.size() == 0 || useChords == null) {
+            chordsIV.setVisibility(View.GONE);
+        } else {
+            chordsIV.setVisibility(View.VISIBLE);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            this.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int width = displayMetrics.widthPixels;
+            // Show the chords
+            chordsIV.setImageBitmap(MusicUtils.chordsBitmap(useChords, width, mContext));
+        }
+
+        //update local database view_timestamp
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_SONG_ID, songId);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+        cv.put(COLUMN_VIEW_TIMESTAMP, formatter.format(new Date()));
+        getContentResolver().insert(SongsProvider.ADD_SONG_URI, cv);
+
+        // update view_timestamp in Adapter for RecyclerView in Main Activity
+        Song changedSong = new Song(
+                songId,
+                titleTV.getText().toString(),
+                singerTV.getText().toString(),
+                songImg,
+                textTV.getText().toString(),
+                "",
+                songUpdate,
+                formatter.format(new Date()),
+                linkTV.getText().toString(), songLike);
+        int songPos = getSongPos(songId);
+        if (songPos > -1) mSongList.set(songPos, changedSong); // else mSongList.add(changedSong);
+        mAdapter.notifyDataSetChanged();
     }
-
-    public  String getChord(String chordName) {
-
-String chordSchema="";
-        String packageName = getPackageName();
-        // Resource name can't contain "#" but it has important meaning in music
-        int resId = getResources().getIdentifier(chordName.replace("#","_"), "string", packageName);
-        Log.i(LOG_TAG, "getChord " + chordName + " resId=" + resId);
-        if (resId>0) chordSchema=getString(resId);
-        return chordSchema;
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.detail, menu);
+        getMenuInflater().inflate(R.menu.detail_menu, menu);
+        starDrawable = menu.findItem(R.id.action_like).getIcon();
+        if (songLike != null) setLiked(songLike);
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        Boolean showChords = prefs.getBoolean("showChords", true);
+        gridDrawable = menu.findItem(R.id.action_grid).getIcon();
+        if (showChords) {
+            chordsIV.setVisibility(View.VISIBLE);
+            menu.findItem(R.id.action_grid).setTitle(R.string.chordoff);
+            gridShow("TRUE");
+        } else {
+            chordsIV.setVisibility(View.GONE);
+            menu.findItem(R.id.action_grid).setTitle(R.string.chordon);
+            gridShow("FALSE");
+        }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_edit) {
-            return true;
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            onBackPressed();
         }
 
+        if (id == R.id.action_like) {
+            if (songLike == null) songLike = "TRUE";
+            else {
+                if (songLike.equals("TRUE")) songLike = "FALSE";
+                else songLike = "TRUE";
+            }
+            setLiked(songLike);
+            ContentValues cv = new ContentValues();
+            cv.put(COLUMN_SONG_ID, songId);
+            cv.put(COLUMN_TITLE, titleTV.getText().toString());
+            cv.put(COLUMN_SINGER, singerTV.getText().toString());
+            cv.put(COLUMN_LINK, linkTV.getText().toString());
+            cv.put(COLUMN_TEXT, textTV.getText().toString());
+            cv.put(COLUMN_LIKE, songLike);
+            getContentResolver().insert(SongsProvider.ADD_SONG_URI, cv);
+            Song changedSong = new Song(
+                    songId, songTitle,
+                    songSinger,
+                    songImg,
+                    songTextBasic,
+                    "",
+                    songUpdate,
+                    songView,
+                    songLink, songLike);
+            int songPos = getSongPos(songId);
+            if (!fromWidget) {
+                mSongList.set(songPos, changedSong);
+                mAdapter.notifyDataSetChanged();
+            }
+        }
+
+        if (id == R.id.action_grid) {
+            SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
+            if (item.getTitle() == getString(R.string.chordoff)) {
+                chordsIV.setVisibility(View.GONE);
+                editor.putBoolean("showChords", false);
+                editor.apply();
+                item.setTitle(R.string.chordon);
+                gridShow("FALSE");
+            } else {
+                editor.putBoolean("showChords", true);
+                editor.apply();
+                chordsIV.setVisibility(View.VISIBLE);
+                item.setTitle(R.string.chordoff);
+                gridShow("TRUE");
+            }
+        }
+
+        if (id==R.id.action_share) {
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_TEXT, songTitle + "\n" + songTextBasic);
+            sendIntent.setType("text/plain");
+            startActivity(Intent.createChooser(sendIntent, "Share '" + songTitle + "'"));
+        }
+
+        if (id == R.id.action_edit) {
+            Intent intent = new Intent(mContext, EditActivity.class);
+            intent.putExtra("songId", songId);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                mContext.startActivity(intent);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "Edit song  exception: ", e);
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (id == R.id.action_widget) {
+            Context context = mContext;
+            SharedPreferences.Editor spEditor = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
+            spEditor.putString("songId", songId);
+            spEditor.putString("songName", songTitle);
+            spEditor.putString("songSinger", songSinger);
+            spEditor.putString("songImg", songImg);
+            spEditor.putString("songText", songTextBasic);
+            spEditor.putString("songLink", songLink);
+            spEditor.putString("songLike", songLike);
+            spEditor.putString("songUpdate", songUpdate);
+            spEditor.putString("songView", songView);
+            spEditor.apply();
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.uka_widget_provider);
+            ComponentName thisWidget = new ComponentName(context, UkaWidgetProvider.class);
+            remoteViews.setTextViewText(R.id.appwidget_title, songTitle);
+            remoteViews.setTextViewText(R.id.appwidget_text, songTextBasic);
+            remoteViews.setImageViewBitmap(R.id.chords_image, MusicUtils.chordsBitmap(useChords, 1200, mContext));
+            appWidgetManager.updateAppWidget(thisWidget, remoteViews);
+        }
         return super.onOptionsItemSelected(item);
     }
 
+    public static int getSongPos(String songTag) {
+        if (!fromWidget) {
+            for (int i = 0; i < mSongList.size(); ++i) {
+                if (mSongList.get(i).getSongId().equals(songTag)) return i;
+            }
+        }
+        return -1;
+    }
+
+    private void setLiked(String ifliked) {
+        try {
+            if (starDrawable != null) {
+                starDrawable.mutate();
+                if (ifliked.equals("TRUE")) {
+                    //like song
+                    starDrawable.setColorFilter(Color.rgb(255, 153, 51), PorterDuff.Mode.SRC_ATOP);
+
+                    // Log to Firebase Analytics
+                    Bundle bundle = new Bundle();
+                    bundle.putString(FirebaseAnalytics.Param.ITEM_ID, songId);
+                    bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, songTitle);
+                    bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "like");
+                    mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.ADD_TO_WISHLIST, bundle);
+
+                } else {
+                    //unlike song
+                    starDrawable.setColorFilter(Color.parseColor("#C2C2C2"), PorterDuff.Mode.SRC_ATOP);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Set star color Exception: ", e);
+        }
+    }
+
+    private void gridShow(String ifshow) {
+        try {
+            if (gridDrawable != null) {
+                gridDrawable.mutate();
+                if (ifshow.equals("TRUE")) {
+                    gridDrawable.setColorFilter(Color.rgb(255, 153, 51), PorterDuff.Mode.SRC_ATOP);
+                } else {
+                    gridDrawable.setColorFilter(Color.parseColor("#9E9E9E"), PorterDuff.Mode.SRC_ATOP);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Set gridDrawable color Exception ", e );
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            Intent intent = new Intent(mContext, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setAction("Detail_Back");
+            startActivity(intent);
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Detail onBackPressed" , e);
+        }
+    }
+
+    @Override
+    public void onRestart() {
+        super.onRestart();
+        detailRedraw(songId);
+    }
+
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+    }
 }

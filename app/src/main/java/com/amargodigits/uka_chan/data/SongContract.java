@@ -16,5 +16,6 @@ public  class SongContract {
         public static final String COLUMN_UPDATE_TIMESTAMP = "update_timestamp";
         public static final String COLUMN_VIEW_TIMESTAMP =  "view_timestamp";
         public static final String COLUMN_LINK = "link";
+        public static final String COLUMN_LIKE = "liked";
     }
 }

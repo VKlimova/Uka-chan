@@ -22,14 +22,17 @@
     <!--android:orientation="vertical"-->
     <!--android:padding="5dp">-->
 
+<!--android:drawableLeft="@drawable/ic_favorite_border_black_24dp"-->
     <TextView
         xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:drawablePadding="2dp"
         android:id="@+id/grid_item_layout"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_margin="3dp"
         android:padding="15dp"
-        android:gravity="left"
+        android:gravity="start"
         android:textSize="17sp" />
 
 <!--</LinearLayout>-->

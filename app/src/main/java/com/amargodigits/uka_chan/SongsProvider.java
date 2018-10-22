@@ -9,8 +9,10 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -19,17 +21,15 @@ import com.amargodigits.uka_chan.data.SongDbHelper;
 
 public class SongsProvider extends ContentProvider {
 
-    // // Uri
-    // authority
     static final String AUTHORITY = "com.amargodigits.uka_chan";
     static final String SONGS_PATH = "songs";
     static final String ADD_PATH = "add_song";
-    //    static final String ADDUPDATE_PATH = "addupdate_song";
+    static final String UPD_PATH = "upd_song";
     static final String DELETE_PATH = "delete_song";
     // Content Uri's
     public static final Uri SONGS_URI = Uri.parse("content://" + AUTHORITY + "/" + SONGS_PATH);
     public static final Uri ADD_SONG_URI = Uri.parse("content://" + AUTHORITY + "/" + ADD_PATH);
-    //    public static final Uri ADDUPDATE_SONG_URI = Uri.parse("content://" + AUTHORITY + "/" + ADDUPDATE_PATH);
+    public static final Uri UPD_SONG_URI = Uri.parse("content://" + AUTHORITY + "/" + UPD_PATH);
     public static final Uri DELETE_SONG_URI = Uri.parse("content://" + AUTHORITY + "/" + DELETE_PATH);
 
     // Strings
@@ -42,8 +42,6 @@ public class SongsProvider extends ContentProvider {
     static final int URI_SONGS = 1;
     // Uri to query one song by ID
     static final int URI_SONG_ID = 2;
-    // Uri to add song to DB if not exist or to update if exists
-//    static final int URI_SONG_ADDUPDATE = 3;
     // Uri to add song to DB
     static final int URI_SONG_ADD = 4;
     // Uri to remove song from DB
@@ -57,7 +55,6 @@ public class SongsProvider extends ContentProvider {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         uriMatcher.addURI(AUTHORITY, SONGS_PATH, URI_SONGS);
         uriMatcher.addURI(AUTHORITY, SONGS_PATH + "/#", URI_SONG_ID);
-//        uriMatcher.addURI(AUTHORITY, ADD_PATH, URI_SONG_ADDUPDATE); // to add or update song to local database
         uriMatcher.addURI(AUTHORITY, ADD_PATH, URI_SONG_ADD); // to add song to local database
         uriMatcher.addURI(AUTHORITY, DELETE_PATH + "/#", URI_SONG_DELETE); // to delete song from database
     }
@@ -67,7 +64,6 @@ public class SongsProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        Log.i(LOG_TAG, "Provider onCreate");
         dbHelper = new SongDbHelper(getContext());
         return true;
     }
@@ -105,7 +101,6 @@ public class SongsProvider extends ContentProvider {
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
-        Log.i(LOG_TAG, "Provider getType" + uri.toString());
         switch (uriMatcher.match(uri)) {
             case URI_SONGS:
                 return SONGS_CONTENT_TYPE;
@@ -115,18 +110,6 @@ public class SongsProvider extends ContentProvider {
         return null;
     }
 
-//    //  insert the record to DB
-//    @Nullable
-//    @Override
-//    public Uri addupdate(@NonNull Uri uri, @Nullable ContentValues contentValues) {
-//        if (uriMatcher.match(uri) != URI_SONG_ADD)
-//            throw new IllegalArgumentException("Wrong URI: " + uri);
-//        mDb = dbHelper.getWritableDatabase();
-//        long rowID = mDb.insert(SongContract.SongEntry.TABLE_NAME, null, contentValues);
-//        Uri resultUri = ContentUris.withAppendedId(ADD_SONG_URI, rowID);
-//        getContext().getContentResolver().notifyChange(resultUri, null);
-//        return resultUri;
-//    }
 
     //  insert the record to DB, or update it if exist
     @Nullable
@@ -139,28 +122,28 @@ public class SongsProvider extends ContentProvider {
         // Checking if song already exists in SQLite
 
         String song_id = contentValues.getAsString(SongContract.SongEntry.COLUMN_SONG_ID);
-        Log.i(LOG_TAG, "SongsProvider insert-update " + song_id);
-        String selection = SongContract.SongEntry.COLUMN_SONG_ID + " = '" + song_id +"'";
-        Log.i(LOG_TAG, "SongsProvider insert-update " + song_id + "  selection= " + selection);
-        Cursor cursor=null;
+
+        String selection = SongContract.SongEntry.COLUMN_SONG_ID + " ='" + song_id + "'";
+        Cursor cursor = null;
         try {
-             cursor = mDb.query(SongContract.SongEntry.TABLE_NAME, null, selection,
+            cursor = mDb.query(SongContract.SongEntry.TABLE_NAME, null, selection,
                     null, null, null, null);
         } catch (Exception e) {
-            Log.i(LOG_TAG, "Exception " +e.toString());
+            Log.i(LOG_TAG, "Exception " + e.toString());
         }
-        Uri resultUri = null;
-        long rowID = 0;
+        Uri resultUri;
+        long rowID;
         if ((cursor != null) && (cursor.getCount() > 0)) {
-            Log.i(LOG_TAG, " Updating ");
+            Log.i(LOG_TAG, " Updating " + song_id);
             rowID = mDb.update(SongContract.SongEntry.TABLE_NAME, contentValues, selection, null);
-            resultUri = ContentUris.withAppendedId(ADD_SONG_URI, rowID);
+            resultUri = ContentUris.withAppendedId(UPD_SONG_URI, rowID);
         } else {
-            Log.i(LOG_TAG, " Inserting " );
+            Log.i(LOG_TAG, " Inserting " + song_id);
             rowID = mDb.insert(SongContract.SongEntry.TABLE_NAME, null, contentValues);
             resultUri = ContentUris.withAppendedId(ADD_SONG_URI, rowID);
         }
         getContext().getContentResolver().notifyChange(resultUri, null);
+        cursor.close();
         return resultUri;
     }
 

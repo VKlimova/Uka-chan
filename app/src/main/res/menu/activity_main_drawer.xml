@@ -3,41 +3,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Import Rien" />
-        <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="Import Mariachi" />
-        <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="Import Despacito" />
 
+    <item
+        android:id="@+id/nav_adMob"
+        android:icon="@drawable/ic_local_florist_black_24dp"
+        android:title="@string/florist" />
+
+    <group android:id="@+id/aGroup">
         <item
-            android:id="@+id/nav_waikiki"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="Import waikiki" />
+            android:id="@+id/nav_title"
+            android:icon="@drawable/ic_sort_by_alpha_black_24dp"
+            android:title="@string/sort_title" />
+        <item
+            android:id="@+id/nav_artist"
+            android:icon="@drawable/ic_supervisor_account_black_24dp"
+            android:title="@string/sort_artist" />
+        <item
+            android:id="@+id/nav_date"
+            android:icon="@drawable/ic_sort_black_24dp"
+            android:title="@string/sort_date" />
+        <item
+            android:id="@+id/nav_like"
+            android:icon="@drawable/ic_favorite_border_black_24dp"
+            android:title="@string/sort_like" />
     </group>
-
-    <item android:title="SQLite">
-        <menu>
-            <item
-                android:id="@+id/nav_manage"
-                android:icon="@drawable/ic_menu_manage"
-                android:title="SQLite -> TextView" />
-            <item
-                android:id="@+id/nav_sqlite_get"
-                android:icon="@drawable/ic_menu_share"
-                android:title="SQLite get from Firebase" />
-            <item
-                android:id="@+id/nav_sqlite_clear"
-                android:icon="@drawable/ic_menu_send"
-                android:title="SQLite clear" />
-        </menu>
-    </item>
-
+    <item
+        android:id="@+id/nav_add"
+        android:icon="@drawable/ic_add_black_24dp"
+        android:title="@string/action_add" />
+    <item
+        android:id="@+id/nav_sqlite_get"
+        android:icon="@drawable/ic_cloud_download_black_24dp"
+        android:title="@string/action_download" />
+    <item
+        android:id="@+id/nav_help"
+        android:icon="@drawable/ic_help_outline_black_24dp"
+        android:title="@string/nav_help" />
 </menu>

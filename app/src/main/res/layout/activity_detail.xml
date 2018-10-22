@@ -1,12 +1,31 @@
-<ScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+   >
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+    android:theme="@style/AppTheme.AppBarOverlay"
+       >
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+<ScrollView
+    android:id="@+id/detail_scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
 
     <LinearLayout
         android:id="@+id/activity_main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <!--<android.support.v7.widget.Toolbar-->
@@ -20,7 +39,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:gravity="left"
+            android:gravity="start"
             android:textSize="20sp" />
 
         <TextView
@@ -28,7 +47,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:gravity="left"
+            android:gravity="start"
             android:textSize="15sp"
             android:textStyle="italic" />
 
@@ -38,33 +57,35 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:clickable="true"
-            android:gravity="left"
+            android:focusable="true"
+            android:gravity="start"
             android:textColor="@color/colorPrimaryDark"
             android:textSize="15sp"
-            android:textStyle="bold" />
-
-<ImageView
-    android:id="@+id/img"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
-        android:scaleType="fitXY"
-/>
+            android:textStyle="bold"
+            />
 
         <ImageView
             android:id="@+id/chordsIV"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
-            android:scaleType="fitXY" />
+            android:scaleType="fitXY"
+            android:contentDescription="@string/chordsIV"/>
 
         <TextView
             android:id="@+id/songtext_view"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:gravity="left"
+            android:gravity="start"
             android:textSize="15sp" />
-
+        <ImageView
+            android:contentDescription="@string/chordsIV"
+            android:id="@+id/img"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY" />
     </LinearLayout>
 </ScrollView>
+</LinearLayout>
