@@ -1,31 +1,20 @@
 package com.amargodigits.uka_chan;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
-
 import com.amargodigits.uka_chan.model.Song;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-
+//import com.google.firebase.firestore.FieldValue;
+//import com.google.firebase.firestore.FirebaseFirestore;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
 import static com.amargodigits.uka_chan.MainActivity.LOG_TAG;
 import static com.amargodigits.uka_chan.MainActivity.mAdapter;
 import static com.amargodigits.uka_chan.MainActivity.mSongList;
@@ -51,7 +40,7 @@ public class EditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -113,7 +102,7 @@ public class EditActivity extends AppCompatActivity {
             cv.put(COLUMN_LINK, linkTV.getText().toString());
             cv.put(COLUMN_TEXT, textTV.getText().toString());
             Date today = new Date();
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+            SimpleDateFormat formatter = new SimpleDateFormat("=yyyy.MM.dd HH:mm:ss");
             cv.put(COLUMN_UPDATE_TIMESTAMP, formatter.format(today));
             cv.put(COLUMN_VIEW_TIMESTAMP, formatter.format(today));
             getContentResolver().insert(SongsProvider.ADD_SONG_URI, cv);
@@ -135,29 +124,30 @@ public class EditActivity extends AppCompatActivity {
             Log.i(LOG_TAG, "Edit changedSong.getSinger(" + songPos + ")='" + changedSong.getSinger() + "'");
             mAdapter.notifyDataSetChanged();
             // update Firebase
-            Map<String, Object> SongMap = new HashMap<>();
-            SongMap.put("name", titleTV.getText().toString());
-            SongMap.put("singer", newSinger);
-            SongMap.put("text", textTV.getText().toString());
-            SongMap.put("link", linkTV.getText().toString());
-            SongMap.put("img", songImg);
-            SongMap.put("latestUpdateTimestamp", FieldValue.serverTimestamp());
+//            Map<String, Object> SongMap = new HashMap<>();
+//            SongMap.put("name", titleTV.getText().toString());
+//            SongMap.put("singer", newSinger);
+//            SongMap.put("text", textTV.getText().toString());
+//            SongMap.put("link", linkTV.getText().toString());
+//            SongMap.put("img", songImg);
+//            SongMap.put("latestUpdateTimestamp", FieldValue.serverTimestamp());
+//
+//            FirebaseFirestore db = FirebaseFirestore.getInstance();
+//            db.collection("songs").document(tagStr)
+//                    .set(SongMap)
+//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void aVoid) {
+//                            Log.i(LOG_TAG, "Edit Activity: To Firebase added with title= " + titleTV.getText().toString());
+//                        }
+//                    })
+//                    .addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            Log.i(LOG_TAG, "Edit Activity: Error adding document", e);
+//                        }
+//                    });
 
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            db.collection("songs").document(tagStr)
-                    .set(SongMap)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Log.i(LOG_TAG, "Edit Activity: To Firebase added with title= " + titleTV.getText().toString());
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.i(LOG_TAG, "Edit Activity: Error adding document", e);
-                        }
-                    });
             onBackPressed();
             return true;
         }

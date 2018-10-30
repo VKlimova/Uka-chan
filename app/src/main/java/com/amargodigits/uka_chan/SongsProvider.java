@@ -25,12 +25,14 @@ public class SongsProvider extends ContentProvider {
     static final String SONGS_PATH = "songs";
     static final String ADD_PATH = "add_song";
     static final String UPD_PATH = "upd_song";
+    static final String OLD_PATH = "old_song";
     static final String DELETE_PATH = "delete_song";
     // Content Uri's
     public static final Uri SONGS_URI = Uri.parse("content://" + AUTHORITY + "/" + SONGS_PATH);
     public static final Uri ADD_SONG_URI = Uri.parse("content://" + AUTHORITY + "/" + ADD_PATH);
     public static final Uri UPD_SONG_URI = Uri.parse("content://" + AUTHORITY + "/" + UPD_PATH);
     public static final Uri DELETE_SONG_URI = Uri.parse("content://" + AUTHORITY + "/" + DELETE_PATH);
+    public static final Uri OLD_SONG_URI=Uri.parse("content://"+AUTHORITY + "/" + OLD_PATH);
 
     // Strings
     static final String SONGS_CONTENT_TYPE = ".dir/vnd." + AUTHORITY + "." + SONGS_PATH;
@@ -111,7 +113,12 @@ public class SongsProvider extends ContentProvider {
     }
 
 
-    //  insert the record to DB, or update it if exist
+    // One of the following will be done:
+    //   insert the record to DB if not exist in DB
+    //  update if exist and no timestamp provided
+    //   update if exists with older timestamp
+    //   do nothing if exists with newer timestamp
+    //
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
@@ -129,18 +136,35 @@ public class SongsProvider extends ContentProvider {
             cursor = mDb.query(SongContract.SongEntry.TABLE_NAME, null, selection,
                     null, null, null, null);
         } catch (Exception e) {
-            Log.i(LOG_TAG, "Exception " + e.toString());
+            Log.e(LOG_TAG, "Exception ",  e);
         }
-        Uri resultUri;
+Uri resultUri=ContentUris.withAppendedId(OLD_SONG_URI, 0); // if no append or insert, consider that the song is old
         long rowID;
-        if ((cursor != null) && (cursor.getCount() > 0)) {
-            Log.i(LOG_TAG, " Updating " + song_id);
-            rowID = mDb.update(SongContract.SongEntry.TABLE_NAME, contentValues, selection, null);
-            resultUri = ContentUris.withAppendedId(UPD_SONG_URI, rowID);
-        } else {
+        if ((cursor != null) && (cursor.getCount() > 0)) {  // Song found in database
+            String newTime =contentValues.getAsString(SongContract.SongEntry.COLUMN_UPDATE_TIMESTAMP);
+            cursor.moveToFirst();
+            if(contentValues.getAsString(SongContract.SongEntry.COLUMN_UPDATE_TIMESTAMP)!=null) { //  request has update timestamp
+                String oldTime = cursor.getString(cursor.getColumnIndex(SongContract.SongEntry.COLUMN_UPDATE_TIMESTAMP));
+                    if (oldTime.compareTo(newTime)<0) { // request is newer than db
+                        Log.i(LOG_TAG, " Updating " + song_id + " because of new timestamp");
+                        rowID = mDb.update(SongContract.SongEntry.TABLE_NAME, contentValues, selection, null);
+                         resultUri = ContentUris.withAppendedId(UPD_SONG_URI, rowID);
+                    }else
+                    {
+                        // request has older timestamp, no update
+                        Log.i(LOG_TAG, " Old " + song_id + ", not updating");
+                    }
+            } else
+            {
+                // request has NO update timestamp, updating anyway
+                Log.i(LOG_TAG, " Updating " + song_id + " with no timestamp");
+                rowID = mDb.update(SongContract.SongEntry.TABLE_NAME, contentValues, selection, null);
+                  resultUri = ContentUris.withAppendedId(UPD_SONG_URI, rowID);
+            }
+        } else { // Song not found in db, inserting the request
             Log.i(LOG_TAG, " Inserting " + song_id);
             rowID = mDb.insert(SongContract.SongEntry.TABLE_NAME, null, contentValues);
-            resultUri = ContentUris.withAppendedId(ADD_SONG_URI, rowID);
+              resultUri = ContentUris.withAppendedId(ADD_SONG_URI, rowID);
         }
         getContext().getContentResolver().notifyChange(resultUri, null);
         cursor.close();

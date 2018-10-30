@@ -57,7 +57,7 @@ public class MusicUtils {
             } else {
                 paint.setTypeface(Typeface.DEFAULT_BOLD);
             }
-            chordCanvas.drawText(useChords.get(j), j * chordWidth + (int) chordWidth / 15, chordWidth / 3, paint);
+            chordCanvas.drawText(useChords.get(j), j * chordWidth + chordWidth / 15, chordWidth / 3, paint);
             String curChord = getChord(useChords.get(j), mContext);
             if (curChord.length() > 0) {  //if chord found in table, draw the chord
                 int fretNum;
@@ -99,6 +99,7 @@ public class MusicUtils {
         Spannable text = new SpannableString(songText);
         int curInd, chordLength;
         // Run through chords+chordPrefs strings to eliminate the chords used in the song
+        // Not all chords are implemented so far
         for (String chord : chords) {
             for (String chordPref : chordPrefs) {
                 chordLength = chord.length() + chordPref.length();

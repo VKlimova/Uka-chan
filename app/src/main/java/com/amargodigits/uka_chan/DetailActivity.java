@@ -30,7 +30,6 @@ import com.squareup.picasso.Picasso;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
 import static com.amargodigits.uka_chan.MainActivity.LOG_TAG;
 import static com.amargodigits.uka_chan.MainActivity.mAdapter;
 import static com.amargodigits.uka_chan.MainActivity.mSongList;
@@ -65,18 +64,18 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         mScrollView = findViewById(R.id.detail_scroll);
         mContext = getApplicationContext();
-        textTV = (TextView) findViewById(R.id.songtext_view);
-        titleTV = (TextView) findViewById(R.id.songtitle_view);
-        singerTV = (TextView) findViewById(R.id.singer_view);
-        linkTV = (TextView) findViewById(R.id.link_view);
-        imgIV = (ImageView) findViewById(R.id.img);
-        chordsIV = (ImageView) findViewById(R.id.chordsIV); // Image view to hold chords image
+        textTV = findViewById(R.id.songtext_view);
+        titleTV = findViewById(R.id.songtitle_view);
+        singerTV = findViewById(R.id.singer_view);
+        linkTV = findViewById(R.id.link_view);
+        imgIV = findViewById(R.id.img);
+        chordsIV = findViewById(R.id.chordsIV); // Image view to hold chords image
         Intent intent = getIntent();
         songId = intent.getStringExtra("songId");
         detailRedraw(songId);

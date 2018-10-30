@@ -2,14 +2,12 @@ package com.amargodigits.uka_chan;
 
 import android.app.AlertDialog;
 import android.app.SearchManager;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,16 +28,16 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.amargodigits.uka_chan.model.Song;
 import com.amargodigits.uka_chan.utils.NetworkUtils;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
-
+//
+// Firestore is forbidden for Capstone project :-(
+//
+//import com.google.firebase.firestore.DocumentSnapshot;
+//import com.google.firebase.firestore.FirebaseFirestore;
+//import com.google.firebase.firestore.QuerySnapshot;
+//
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -54,19 +52,13 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.reward.RewardedVideoAd;
 
 import static com.amargodigits.uka_chan.DetailActivity.PREFS_NAME;
-import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_IMG;
-import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_LANGUAGE;
-import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_LINK;
-import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_SINGER;
-import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_SONG_ID;
-import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_TEXT;
 import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_TITLE;
-import static com.amargodigits.uka_chan.data.SongContract.SongEntry.COLUMN_UPDATE_TIMESTAMP;
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, RewardedVideoAdListener {
     public static final String LOG_TAG = "uka_chan_tag";
-    public FirebaseFirestore db;
+    //    public FirebaseFirestore db;
     public static RecyclerView mRecyclerView;
     public static GridLayoutManager mLayoutManager;
     public static SongListAdapter mAdapter;
@@ -75,6 +67,7 @@ public class MainActivity extends AppCompatActivity
     private RewardedVideoAd mRewardedVideoAd;
     SearchView searchView;
     SharedPreferences prefs;
+    public static Context mContext;
     final SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
 
     @Override
@@ -86,21 +79,20 @@ public class MainActivity extends AppCompatActivity
             Log.e(LOG_TAG, "Main onCreate setContentView(R.layout.activity_main); Exception:", e);
         }
         prefs = this.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        mContext = getApplicationContext();
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        db = FirebaseFirestore.getInstance();
-        mRecyclerView = (RecyclerView) findViewById(R.id.songs_rv);
+//        db = FirebaseFirestore.getInstance();
+        mRecyclerView = findViewById(R.id.songs_rv);
         mLayoutManager = new GridLayoutManager(this, 1);
         handleIntent(getIntent());
-
         try {
             NetworkUtils.LoadSQLiteSongsTask mAsyncTasc = new NetworkUtils.LoadSQLiteSongsTask(getApplicationContext());
             mAsyncTasc.execute();
@@ -112,19 +104,21 @@ public class MainActivity extends AppCompatActivity
         Date lastUpdDate;
         String lastUpdStr = prefs.getString("LAST_UPDATE", "");
         ParsePosition pos = new ParsePosition(0);
-        if ((lastUpdStr == null) || (lastUpdStr.length() < 1)) {
+        if (lastUpdStr.length() < 1) {
             // if the app is run for a first time, consider it to have the oldest lastUpdateDate
             lastUpdDate = formatter.parse("2018.01.01 00:00:00", pos);
         } else {
             lastUpdDate = formatter.parse(lastUpdStr, pos);
         }
-        // if the lastUpdStr is 2 days from now, check data in Firebase
+        // if the lastUpdStr is 2 days from now, check data in Firebase or Json
         Calendar calendar = GregorianCalendar.getInstance();
         calendar.setTime(new Date());
         calendar.add(Calendar.DAY_OF_YEAR, -2);
         Date twoDaysBefore = calendar.getTime();
         if (lastUpdDate.before(twoDaysBefore)) {
-            firebase2Sqlite();
+//            firebase2Sqlite();
+            NetworkUtils.LoadJsonSongsTask jAsyncTasc = new NetworkUtils.LoadJsonSongsTask(getApplicationContext());
+            jAsyncTasc.execute();
         }
         // Sample AdMob app ID: ca-app-pub-3940256099942544~3347511713
         MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
@@ -154,7 +148,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -188,7 +182,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.search) {
             onSearchRequested();
             return true;
@@ -260,11 +253,13 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (id == R.id.nav_sqlite_get) {
-            firebase2Sqlite();
+//            firebase2Sqlite();
+            NetworkUtils.LoadJsonSongsTask jAsyncTasc = new NetworkUtils.LoadJsonSongsTask(getApplicationContext());
+            jAsyncTasc.execute();
         }
 
         if (id == R.id.nav_help) {
-            ImageView drawerImg = (ImageView) findViewById(R.id.drawerImg);
+            ImageView drawerImg = findViewById(R.id.drawerImg);
             drawerImg.setImageResource(R.drawable.fox_uka_fest);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -286,7 +281,7 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -332,55 +327,60 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    // Firestore is forbidden for Capstone Project :-(
+
     void firebase2Sqlite() {
 //    Read the last Update date from Shared Preferences and select from Firebase
 //    only records with lastUpdate in Firebase greater
 //    then in local base. Then update the date in Shared Preferences to "Today".
 //    Also, SQLite doesn't support Date type, so keeping the date in string.
-        Date lastUpdDate;
-        String lastUpdStr = prefs.getString("LAST_UPDATE", "");
-        ParsePosition pos = new ParsePosition(0);
-        if ((lastUpdStr == null) || (lastUpdStr.length() < 1)) {
-            // if the app is run for a first time, consider it to have the oldest lastUpdateDate
-            lastUpdDate = formatter.parse("2018.01.01 00:00:00", pos);
-        } else {
-            lastUpdDate = formatter.parse(lastUpdStr, pos);
-        }
-        db.collection("songs")
-                .whereGreaterThan("latestUpdateTimestamp", lastUpdDate)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        SharedPreferences.Editor editor = prefs.edit();
-                        String todayStr = formatter.format(new Date());
-                        editor.putString("LAST_UPDATE", todayStr);
-                        editor.apply();
-                        if (task.isSuccessful()) {
-                            int updCount = 0, insCount = 0;
-                            for (DocumentSnapshot document : task.getResult()) {
-                                ContentValues cv = new ContentValues();
-                                cv.put(COLUMN_SONG_ID, document.getId());
-                                cv.put(COLUMN_LANGUAGE, document.getString("lang"));
-                                cv.put(COLUMN_LINK, document.getString("link"));
-                                cv.put(COLUMN_SINGER, document.getString("singer"));
-                                cv.put(COLUMN_IMG, document.getString("img"));
-                                cv.put(COLUMN_TEXT, document.getString("text"));
-                                cv.put(COLUMN_TITLE, document.getString("name"));
-                                String strDate = formatter.format(document.getDate("latestUpdateTimestamp"));
-                                cv.put(COLUMN_UPDATE_TIMESTAMP, strDate);
-                                String result = getContentResolver().insert(SongsProvider.ADD_SONG_URI, cv).toString();
-                                if (result.contains("upd_song")) ++updCount;
-                                if (result.contains("add_song")) ++insCount;
-                            }
-                            NetworkUtils.LoadSQLiteSongsTask mAsyncTasc = new NetworkUtils.LoadSQLiteSongsTask(getApplicationContext());
-                            mAsyncTasc.execute();
-                            Toast.makeText(MainActivity.this, "Added " + insCount + " new songs\nUpdated " + updCount + " songs", Toast.LENGTH_LONG).show();
-                        } else {
-                            Log.e(LOG_TAG, "Error getting documents.", task.getException());
-                        }
-                    }
-                });
+//        Date lastUpdDate;
+//        String lastUpdStr = prefs.getString("LAST_UPDATE", "");
+//        ParsePosition pos = new ParsePosition(0);
+//        if ((lastUpdStr == null) || (lastUpdStr.length() < 1)) {
+//            // if the app is run for a first time, consider it to have the oldest lastUpdateDate
+//            lastUpdDate = formatter.parse("2018.01.01 00:00:00", pos);
+//        } else {
+//            lastUpdDate = formatter.parse(lastUpdStr, pos);
+//        }
+//        db.collection("songs")
+//                .whereGreaterThan("latestUpdateTimestamp", lastUpdDate)
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        SharedPreferences.Editor editor = prefs.edit();
+//                        String todayStr = formatter.format(new Date());
+//                        editor.putString("LAST_UPDATE", todayStr);
+//                        editor.apply();
+//                        if (task.isSuccessful()) {
+//                            int updCount = 0, insCount = 0, oldCount=0;
+//                            for (DocumentSnapshot document : task.getResult()) {
+//                                ContentValues cv = new ContentValues();
+//                                cv.put(COLUMN_SONG_ID, document.getId());
+//                                cv.put(COLUMN_LANGUAGE, document.getString("lang"));
+//                                cv.put(COLUMN_LINK, document.getString("link"));
+//                                cv.put(COLUMN_SINGER, document.getString("singer"));
+//                                cv.put(COLUMN_IMG, document.getString("img"));
+//                                cv.put(COLUMN_TEXT, document.getString("text"));
+//                                cv.put(COLUMN_TITLE, document.getString("name"));
+//                                String strDate = formatter.format(document.getDate("latestUpdateTimestamp"));
+//                                cv.put(COLUMN_UPDATE_TIMESTAMP, strDate);
+//                                String result = getContentResolver().insert(SongsProvider.ADD_SONG_URI, cv).toString();
+//                                if (result.contains("upd_song")) ++updCount;
+//                                if (result.contains("add_song")) ++insCount;
+//                                if (result.contains("old_song")) ++oldCount;
+//                            }
+//                            NetworkUtils.LoadSQLiteSongsTask mAsyncTasc = new NetworkUtils.LoadSQLiteSongsTask(getApplicationContext());
+//                            mAsyncTasc.execute();
+//                            Toast.makeText(MainActivity.this,
+//                                    "Added " + insCount + " new songs, " +
+//                                    "Updated " + updCount + " songs, Ignored " + oldCount + " songs", Toast.LENGTH_LONG).show();
+//                        } else {
+//                            Log.e(LOG_TAG, "Error getting documents.", task.getException());
+//                        }
+//                    }
+//                });
 
     }
 
@@ -407,7 +407,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onRewarded(RewardItem rewardItem) {
-        ImageView drawerImg = (ImageView) findViewById(R.id.drawerImg);
+        ImageView drawerImg = findViewById(R.id.drawerImg);
         drawerImg.setImageResource(R.drawable.fox_uka_fest);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
